@@ -14,8 +14,8 @@ import json
 CURRENT_VERSION = "1.0.0"  # إصدار النسخة الحالية لبرنامجك
 
 # 📝 استبدل هذه الروابط بروابط ملفاتك المباشرة مستقبلاً (مثال توضيحي):
-VERSION_URL = "https://raw.githubusercontent.com/username/repo/main/version.json"
-UPDATE_DOWNLOAD_URL = "https://raw.githubusercontent.com/username/repo/main/main.exe"
+VERSION_URL = "https://raw.githubusercontent.com/abuthamoh07-del/PDF-ExpSuite/refs/heads/main/version.json"
+UPDATE_DOWNLOAD_URL = "https://github.com/abuthamoh07-del/PDF-ExpSuite/raw/refs/heads/main/main.exe"
 
 def check_for_updates():
     """فحص وجود تحديث جديد وتحميله واستبداله تلقائياً"""
