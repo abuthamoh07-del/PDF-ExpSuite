@@ -7,29 +7,32 @@ import sys
 import subprocess
 import urllib.request  # مكتبة أساسية لفحص وتحميل التحديثات من الإنترنت
 import json
-import re
-import customtkinter as ctkinter
 
 # =========================================================================
 # 🚀 إعدادات نظام التحديث التلقائي الرقمي
 # =========================================================================
 CURRENT_VERSION = "1.0.0"  # إصدار النسخة الحالية لبرنامجك
 
+# 📝 استبدل هذه الروابط بروابط ملفاتك المباشرة مستقبلاً (مثال توضيحي):
 VERSION_URL = "https://raw.githubusercontent.com/abuthamoh07-del/PDF-ExpSuite/refs/heads/main/version.json"
 UPDATE_DOWNLOAD_URL = "https://github.com/abuthamoh07-del/PDF-ExpSuite/raw/refs/heads/main/main.exe"
 
 def check_for_updates():
     """فحص وجود تحديث جديد وتحميله واستبداله تلقائياً"""
     try:
+        # 1. قراءة ملف الـ JSON الخاص بالإصدار من السيرفر (وقت الاستجابة 3 ثوانٍ كحد أقصى لعدم تعليق البرنامج)
         with urllib.request.urlopen(VERSION_URL, timeout=3) as response:
             data = json.loads(response.read().decode())
             latest_version = data.get("version", "1.0.0")
             update_notes = data.get("notes", "تحسينات عامة على النظام.")
            
+        # 2. مقارنة الإصدار الحالي بالإصدار الموجود على السيرفر
         if latest_version > CURRENT_VERSION:
+            # سؤال المستخدم إن كان يود التحديث الآن
             msg = f"🌟 يتوفر تحديث جديد بإصدار [{latest_version}]\n\nالميزات الجديدة:\n{update_notes}\n\nهل تريد التحديث الآن؟"
             if messagebox.askyesno("تحديث النظام تلقائياً", msg):
                
+                # إنشاء نافذة تحميل مؤقتة للمستخدم لتوضيح خط سير التحميل
                 progress_win = tk.Tk()
                 progress_win.title("جاري تحميل التحديث...")
                 progress_win.geometry("350x120")
@@ -41,17 +44,22 @@ def check_for_updates():
                 p_bar.pack(pady=5)
                 progress_win.update()
 
+                # دالة لتحديث شريط التحميل أثناء التنزيل
                 def download_progress(count, block_size, total_size):
                     if total_size > 0:
                         progress = int(count * block_size * 100 / total_size)
                         p_bar['value'] = progress
                         progress_win.update()
 
+                # اسم الملف المؤقت الجديد
                 new_exe_name = "main_new.exe"
                
+                # تحميل الملف الجديد من رابط السيرفر المباشر
                 urllib.request.urlretrieve(UPDATE_DOWNLOAD_URL, new_exe_name, reporthook=download_progress)
                 progress_win.destroy()
                
+                # 3. الخدعة البرمجية الذكية (استخدام ملف الدفعات الـ Bat لاستبدال الملف الأصلي)
+                # ينشئ ملف مؤقت يقوم بمسح الإصدار الحالي، وتغيير اسم التحديث الجديد لاسم برنامجك الأصلي ثم تشغيله وحذف نفسه!
                 bat_script = f"""@echo off
                 timeout /t 2 /nobreak > nul
                 del "{os.path.basename(sys.argv[0])}"
@@ -64,9 +72,11 @@ def check_for_updates():
                
                 messagebox.showinfo("اكتمل التحميل", "تم تحميل التحديث بنجاح! سيتم إغلاق البرنامج الآن لتثبيت الإصدار الجديد تلقائياً.")
                
+                # تشغيل ملف الـ Bat والخروج من البرنامج الحالي فوراً لإتاحة استبداله
                 subprocess.Popen(["updater.bat"], shell=True)
                 sys.exit()
     except Exception as e:
+        # في حال عدم وجود إنترنت أو تعذر السيرفر، يكمل البرنامج عمله طبيعياً دون التسبب بـ Crash
         pass
 
 # =========================================================================
@@ -138,6 +148,10 @@ def check_activation():
     activation_window.protocol("WM_DELETE_WINDOW", sys.exit)
     activation_window.mainloop()
     return False
+
+# =========================================================================
+# ⚙️ كود إدارة المسارات والشاشات الرسومية للتطبيق
+# =========================================================================
 
 def resource_path(relative_path):
     try:
@@ -211,158 +225,7 @@ class SplashScreen:
             self.splash.destroy()
             self.on_finish_callback()
 
-# =========================================================================
-# 📂 التبويب الجديد: فرز وتجميع الصور المتشابهة تلقائياً (CustomTkinter)
-# =========================================================================
-class ImageGroupToPdfTab(ctkinter.CTkFrame):
-    def __init__(self, master, **kwargs):
-        super().__init__(master, **kwargs)
-        
-        self.source_dir = ""
-        self.output_dir = ""
-        self.create_widgets()
-        
-    def create_widgets(self):
-        self.title_label = ctkinter.CTkLabel(
-            self, 
-            text="أداة تجميع الصور المتشابهة إلى PDF تلقائياً", 
-            font=("Cairo", 18, "bold")
-        )
-        self.title_label.pack(pady=20)
-        
-        self.source_frame = ctkinter.CTkFrame(self)
-        self.source_frame.pack(pady=10, fill="x", padx=40)
-        
-        self.btn_browse_source = ctkinter.CTkButton(
-            self.source_frame, 
-            text="اختيار مجلد الصور", 
-            command=self.browse_source,
-            font=("Cairo", 12, "bold")
-        )
-        self.btn_browse_source.pack(side="right", padx=10, pady=10)
-        
-        self.lbl_source_path = ctkinter.CTkLabel(
-            self.source_frame, 
-            text="لم يتم اختيار مجلد بعد...", 
-            anchor="w",
-            font=("Cairo", 11)
-        )
-        self.lbl_source_path.pack(side="left", fill="x", expand=True, padx=10, pady=10)
-        
-        self.output_frame = ctkinter.CTkFrame(self)
-        self.output_frame.pack(pady=10, fill="x", padx=40)
-        
-        self.btn_browse_output = ctkinter.CTkButton(
-            self.output_frame, 
-            text="تحديد مجلد الحفظ", 
-            command=self.browse_output,
-            font=("Cairo", 12, "bold"),
-            fg_color="#2c3e50",
-            hover_color="#34495e"
-        )
-        self.btn_browse_output.pack(side="right", padx=10, pady=10)
-        
-        self.lbl_output_path = ctkinter.CTkLabel(
-            self.output_frame, 
-            text="لم يتم تحديد مجلد الحفظ بعد...", 
-            anchor="w",
-            font=("Cairo", 11)
-        )
-        self.lbl_output_path.pack(side="left", fill="x", expand=True, padx=10, pady=10)
-        
-        self.btn_start = ctkinter.CTkButton(
-            self, 
-            text="ابدأ عملية الفرز والتحويل التلقائي", 
-            command=self.process_images_to_pdf,
-            font=("Cairo", 14, "bold"),
-            fg_color="#27ae60",
-            hover_color="#2ecc71",
-            height=40
-        )
-        self.btn_start.pack(pady=30)
-        
-        self.log_text = ctkinter.CTkTextbox(self, width=500, height=150, font=("Consolas", 11))
-        self.log_text.pack(pady=10, padx=40, fill="both", expand=True)
-        
-    def browse_source(self):
-        directory = filedialog.askdirectory(title="اختر مجلد الصور التي تود فرزها")
-        if directory:
-            self.source_dir = directory
-            self.lbl_source_path.configure(text=directory)
-            self.log(f"تم اختيار مجلد المصدر: {directory}")
-            
-    def browse_output(self):
-        directory = filedialog.askdirectory(title="اختر مجلد حفظ ملفات PDF الناتجة")
-        if directory:
-            self.output_dir = directory
-            self.lbl_output_path.configure(text=directory)
-            self.log(f"تم تحديد مجلد الحفظ: {directory}")
-            
-    def log(self, message):
-        self.log_text.insert("end", message + "\n")
-        self.log_text.see("end")
 
-    def process_images_to_pdf(self):
-        if not self.source_dir or not self.output_dir:
-            messagebox.showwarning("تنبيه", "الرجاء اختيار مجلد المصدر ومجلد الحفظ أولاً!")
-            return
-            
-        self.log("جاري فحص المجلد وقراءة الصور...")
-        valid_extensions = ('.jpg', '.jpeg', '.png', '.bmp', '.tiff')
-        groups = {}
-        
-        try:
-            files = os.listdir(self.source_dir)
-            for file in files:
-                if file.lower().endswith(valid_extensions):
-                    match = re.split(r'[-_\s.]', file, maxsplit=1)
-                    if match:
-                        prefix = match[0].strip()
-                        if prefix not in groups:
-                            groups[prefix] = []
-                        groups[prefix].append(os.path.join(self.source_dir, file))
-            
-            if not groups:
-                self.log("لم يتم العثور على أي صور تطابق صيغة التسمية المشتركة.")
-                messagebox.showinfo("انتهى", "لا توجد صور صالحة للتحويل.")
-                return
-                
-            converted_count = 0
-            for group_name, image_paths in groups.items():
-                image_paths.sort()
-                pdf_filename = f"{group_name}.pdf"
-                pdf_output_path = os.path.join(self.output_dir, pdf_filename)
-                
-                image_list = []
-                for img_path in image_paths:
-                    try:
-                        img = Image.open(img_path)
-                        if img.mode in ("RGBA", "P"):
-                            img = img.convert("RGB")
-                        image_list.append(img)
-                    except Exception as e:
-                        self.log(f"خطأ في قراءة الصورة {os.path.basename(img_path)}: {str(e)}")
-                
-                if image_list:
-                    image_list[0].save(
-                        pdf_output_path, 
-                        save_all=True, 
-                        append_images=image_list[1:]
-                    )
-                    self.log(f"✅ تم بنجاح إنشاء: {pdf_filename} (يحتوي على {len(image_list)} صور)")
-                    converted_count += 1
-            
-            self.log(f"🎉 اكتملت العملية بالكامل! تم إنتاج {converted_count} ملفات PDF.")
-            messagebox.showinfo("نجاح العملية", f"تم إنشاء {converted_count} ملفات PDF بنجاح في مجلد الحفظ.")
-            
-        except Exception as e:
-            self.log(f"حدث خطأ غير متوقع أثناء المعالجة: {str(e)}")
-            messagebox.showerror("خطأ", f"فشلت العملية بسبب: {str(e)}")
-
-
-# =========================================================================
-# 🎛️ واجهة البرنامج الرئيسي (المستعرض مع الأداة الذكية)
-# =========================================================================
 class UltimatePDFViewer:
     def __init__(self, root):
         self.root = root
@@ -388,22 +251,8 @@ class UltimatePDFViewer:
         self.photo = None
         self.thumbnail_images = []
 
-        # تهيئة الألسنة / التبويبات (Notebook)
-        self.main_notebook = ttk.Notebook(self.root)
-        self.main_notebook.pack(fill=tk.BOTH, expand=True)
-
-        # 1. تبويب المستعرض الرئيسي
-        self.viewer_tab = tk.Frame(self.main_notebook, bg="#2c3e50")
-        self.main_notebook.add(self.viewer_tab, text=" 📂 مستعرض ملفات PDF ")
-
-        # 2. تبويب فرز وتجميع الصور (الجديد)
-        self.smart_images_tab = ImageGroupToPdfTab(self.main_notebook)
-        self.main_notebook.add(self.smart_images_tab, text=" 🔄 فرز وتجميع الصور المتشابهة تلقائياً ")
-
-        # بناء واجهة المستعرض داخل التبويب الأول
         self.setup_ui()
 
-        # اختصارات لوحة المفاتيح
         self.root.bind("<Right>", lambda e: self.next_page())
         self.root.bind("<Left>", lambda e: self.prev_page())
         self.root.bind("<Up>", lambda e: self.prev_file_wrapper(e))
@@ -417,8 +266,7 @@ class UltimatePDFViewer:
         style = ttk.Style()
         style.theme_use('clam')
       
-        # شريط الأدوات داخل تبويب المستعرض الأول
-        self.toolbar = tk.Frame(self.viewer_tab, bg="#1a252f", pady=8, padx=10)
+        self.toolbar = tk.Frame(self.root, bg="#1a252f", pady=8, padx=10)
         self.toolbar.pack(side=tk.TOP, fill=tk.X)
 
         self.btn_open = tk.Button(self.toolbar, text="📂 فتح ملف", font=("Arial", 10, "bold"), bg="#3498db", fg="white", bd=0, padx=10, pady=4, cursor="hand2", command=self.open_file_dialog)
@@ -457,7 +305,7 @@ class UltimatePDFViewer:
         tk.Button(self.toolbar, text=" ➖ ", font=("Arial", 10, "bold"), bg="#7f8c8d", fg="white", bd=0, padx=8, pady=4, cursor="hand2", command=self.zoom_out).pack(side=tk.RIGHT, padx=2)
         tk.Button(self.toolbar, text=" ➕ ", font=("Arial", 10, "bold"), bg="#7f8c8d", fg="white", bd=0, padx=8, pady=4, cursor="hand2", command=self.zoom_in).pack(side=tk.RIGHT, padx=2)
 
-        self.main_split_container = tk.Frame(self.viewer_tab, bg="#2c3e50")
+        self.main_split_container = tk.Frame(self.root, bg="#2c3e50")
         self.main_split_container.pack(fill=tk.BOTH, expand=True)
 
         self.right_sidebar = tk.Frame(self.main_split_container, bg="#2c3e50", width=220)
@@ -742,13 +590,13 @@ class UltimatePDFViewer:
 # 🚦 نقطة انطلاق تشغيل البرنامج
 # =========================================================================
 if __name__ == "__main__":
-    # 🌟 خطوة 1: فحص التحديثات أولاً
+    # 🌟 خطوة 1: فحص التحديثات أولاً (إذا وجد تحديث سيحمله ويغلق البرنامج الحالي تلقائياً)
     check_for_updates()
    
     # 🌟 خطوة 2: استدعاء نظام فحص رخصة الترخيص
     check_activation()
   
-    # 🌟 خطوة 3: تشغيل البرنامج وشاشة التحميل
+    # 🌟 خطوة 3: تشغيل البرنامج وشاشة التحميل المائية
     root = tk.Tk()
     app = UltimatePDFViewer(root)
     splash = SplashScreen(root, app.show_main_window)
