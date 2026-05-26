@@ -13,7 +13,7 @@ import customtkinter as ctkinter
 # =========================================================================
 # 🚀 إعدادات نظام التحديث التلقائي الرقمي
 # =========================================================================
-CURRENT_VERSION = "1.1.0"  # إصدار النسخة الحالية لبرنامجك
+CURRENT_VERSION = "1.2.0"  # إصدار النسخة الحالية لبرنامجك
 
 VERSION_URL = "https://raw.githubusercontent.com/abuthamoh07-del/PDF-ExpSuite/refs/heads/main/version.json"
 UPDATE_DOWNLOAD_URL = "https://github.com/abuthamoh07-del/PDF-ExpSuite/raw/refs/heads/main/main.exe"
@@ -118,7 +118,7 @@ def check_activation():
     key_entry = tk.Entry(activation_window, font=("Arial", 11), width=35, justify="center")
     key_entry.pack(ipady=2)
 
-    tk.Label(activation_window, text="للتواصل مع المصمم 00967735715995:", font=("Arial", 12, "bold"), fg="#add8e6", bg="#1a252f").pack(pady=10)
+    tk.Label(activation_window, text="للتواصل مع المصمم 00967735715995 📞:", font=("Arial", 12, "bold"), fg="#add8e6", bg="#1a252f").pack(pady=10)
   
     def verify():
         if key_entry.get().strip() == correct_key:
@@ -194,7 +194,7 @@ class SplashScreen:
 
         copyright_text = (
             "حقوق الملكية محفوظة لدى المصمم: عبدالملك محمد علي البطاح\n"
-            "للتواصل والدعم الفني يرجى الإتصال على 00967735715995"
+            "للتواصل والدعم الفني يرجى الإتصال على 00967735715995 📞"
         )
         lbl_copy = tk.Label(main_frame, text=copyright_text, font=("Arial", 10, "bold"), fg="#bdc3c7", bg="#1a252f", justify=tk.CENTER, pady=10)
         lbl_copy.pack(side=tk.BOTTOM, fill=tk.X)
